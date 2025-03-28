@@ -71,11 +71,13 @@ const BidDetails = () => {
   const [editedBid, setEditedBid] = useState<Partial<Bid>>({});
   const [projects, setProjects] = useState<Project[]>([]);
   const [costs, setCosts] = useState<CostItem[]>([]);
+  
   const [newProject, setNewProject] = useState({
     name: "",
     description: "",
-    status: "active" as const
+    status: "active" as "active" | "completed" | "on-hold" | "cancelled"
   });
+  
   const [newCost, setNewCost] = useState({
     category: "",
     description: "",
@@ -85,6 +87,7 @@ const BidDetails = () => {
     quantity: "1",
     unit: ""
   });
+  
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
   const [costDialogOpen, setCostDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -190,7 +193,7 @@ const BidDetails = () => {
       setNewProject({
         name: "",
         description: "",
-        status: "active" as const
+        status: "active" as "active" | "completed" | "on-hold" | "cancelled"
       });
       
       setProjectDialogOpen(false);
@@ -734,8 +737,8 @@ const BidDetails = () => {
                     <Label htmlFor="projectStatus">Status</Label>
                     <Select
                       value={newProject.status}
-                      onValueChange={(value: "active" | "completed" | "on-hold" | "cancelled") => 
-                        setNewProject({ ...newProject, status: value })
+                      onValueChange={(value) => 
+                        setNewProject({ ...newProject, status: value as "active" | "completed" | "on-hold" | "cancelled" })
                       }
                     >
                       <SelectTrigger id="projectStatus">
