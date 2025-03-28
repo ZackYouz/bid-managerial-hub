@@ -190,7 +190,7 @@ const BidDetails = () => {
       setNewProject({
         name: "",
         description: "",
-        status: "active"
+        status: "active" as const
       });
       
       setProjectDialogOpen(false);
