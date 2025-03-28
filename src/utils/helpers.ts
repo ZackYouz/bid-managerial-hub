@@ -69,6 +69,14 @@ export const getDeadlineColor = (deadline: string): string => {
   return 'text-green-500'; // Plenty of time
 };
 
+// Calculate days remaining until deadline
+export const getRemainingDays = (deadline: string): number => {
+  const now = new Date();
+  const deadlineDate = new Date(deadline);
+  const timeDiff = deadlineDate.getTime() - now.getTime();
+  return Math.ceil(timeDiff / (1000 * 3600 * 24));
+};
+
 // Format file size
 export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes';

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { 
@@ -94,7 +93,6 @@ const BidDetails = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Load bid data
   useEffect(() => {
     if (!id) return;
     
@@ -106,7 +104,6 @@ const BidDetails = () => {
       navigate('/bids');
     }
     
-    // Load related projects and costs
     setProjects(getProjectsByBidId(id));
     setCosts(getCostsByBidId(id));
   }, [id, navigate]);
@@ -121,7 +118,6 @@ const BidDetails = () => {
   
   const handleEditToggle = () => {
     if (isEditing) {
-      // Cancel editing
       setEditedBid(bid);
     }
     setIsEditing(!isEditing);
@@ -263,7 +259,37 @@ const BidDetails = () => {
     }
   };
   
-  // Calculate financial summaries
+  const handleConvertToProject = () => {
+    const projectStatus: 'active' | 'completed' | 'on-hold' | 'cancelled' = 'active';
+    
+    const projectData = {
+      bidId: bid.id,
+      name: bid.bidName,
+      description: bid.notes,
+      status: projectStatus,
+      clientName: bid.clientName,
+      files: []
+    };
+    
+    const createdProject = createProject(projectData);
+    
+    if (createdProject) {
+      setProjects([...projects, createdProject]);
+      setNewProject({
+        name: "",
+        description: "",
+        status: "active"
+      });
+      
+      setProjectDialogOpen(false);
+      
+      toast({
+        title: "Project Created",
+        description: "New project has been created successfully.",
+      });
+    }
+  };
+  
   const financialSummary = (() => {
     const totalSupplierPrice = costs.reduce((sum, cost) => {
       return sum + (cost.supplierPrice || 0) * cost.quantity;
@@ -293,7 +319,6 @@ const BidDetails = () => {
   
   return (
     <div className="space-y-6">
-      {/* Back button and actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <Button variant="outline" onClick={() => navigate('/bids')}>
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -347,7 +372,6 @@ const BidDetails = () => {
         </div>
       </div>
       
-      {/* Bid Header */}
       <div className="flex flex-col gap-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
@@ -383,7 +407,6 @@ const BidDetails = () => {
           </div>
         </div>
         
-        {/* Status Action Buttons */}
         {!isEditing && bid.status !== 'won' && bid.status !== 'lost' && (
           <div className="flex flex-wrap gap-2">
             <Button 
@@ -434,7 +457,6 @@ const BidDetails = () => {
       
       <Separator />
       
-      {/* Main Content Tabs */}
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full justify-start border-b mb-4 rounded-none bg-transparent p-0">
           <TabsTrigger 
@@ -457,7 +479,6 @@ const BidDetails = () => {
           </TabsTrigger>
         </TabsList>
         
-        {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
           <div className="grid md:grid-cols-3 gap-6">
             <Card className="md:col-span-2">
@@ -668,7 +689,6 @@ const BidDetails = () => {
           </div>
         </TabsContent>
         
-        {/* Projects Tab */}
         <TabsContent value="projects" className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Projects</h2>
@@ -799,7 +819,6 @@ const BidDetails = () => {
           )}
         </TabsContent>
         
-        {/* Costing Tab */}
         <TabsContent value="costing" className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Cost Breakdown</h2>
