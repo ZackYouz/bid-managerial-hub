@@ -14,7 +14,8 @@ import {
   Activity as ActivityIcon,
   Layers,
   TrendingUp,
-  BarChart2 
+  BarChart2,
+  AlertCircle 
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,7 +37,7 @@ import {
 
 const Dashboard = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [upcomingBids, setUpcomingBids] = useState<Bid[]>([]);
+  const [pendingBids, setPendingBids] = useState<Bid[]>([]);
   const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
   const [bidStatusData, setBidStatusData] = useState<any[]>([]);
   const [bidTypeData, setBidTypeData] = useState<any[]>([]);
@@ -49,12 +50,10 @@ const Dashboard = () => {
     setStats(dashboardStats);
     setRecentActivity(dashboardStats.recentActivity);
 
-    // Get upcoming deadlines
-    const deadlines = getUpcomingDeadlines(7);
-    setUpcomingBids(deadlines);
-
-    // Get all bids for charts
+    // Get all bids to filter pending ones
     const allBids = getBids();
+    const pending = allBids.filter(bid => bid.status === 'pending');
+    setPendingBids(pending);
 
     // Prepare bid status data for chart
     const statusCount = allBids.reduce((acc, bid) => {
@@ -192,17 +191,73 @@ const Dashboard = () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Upcoming Deadlines</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Pending Bids</CardTitle>
+            <Clock className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.upcomingDeadlines}</div>
+            <div className="text-2xl font-bold">{pendingBids.length}</div>
             <p className="text-xs text-muted-foreground">
-              In the next 7 days
+              Need your attention
             </p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Pending Bids Section */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <div>
+            <CardTitle>Pending Bids</CardTitle>
+            <CardDescription>Bids that need your attention</CardDescription>
+          </div>
+          <AlertCircle className="h-5 w-5 text-blue-500" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {pendingBids.length > 0 ? (
+              pendingBids.map((bid) => (
+                <div 
+                  key={bid.id} 
+                  className="flex items-center border-b pb-2 last:border-0 cursor-pointer hover:bg-gray-50 p-2 rounded-md"
+                  onClick={() => navigate(`/bids/${bid.id}`)}
+                >
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium">{bid.bidName}</p>
+                      <Badge className={getStatusColor(bid.status)}>
+                        {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>Client: {bid.clientName}</span>
+                      <span>Due: {formatDate(bid.deadline)}</span>
+                    </div>
+                    {bid.estimatedValue && (
+                      <div className="text-xs text-gray-500">
+                        Est. Value: ${bid.estimatedValue.toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground py-4">
+                No pending bids at the moment
+              </p>
+            )}
+            
+            {pendingBids.length > 0 && (
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => navigate('/bids?status=pending')}
+              >
+                View All Pending Bids
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Charts Section */}
       <div className="grid gap-4 md:grid-cols-2">
@@ -274,92 +329,40 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Upcoming Deadlines and Activity */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle>Upcoming Deadlines</CardTitle>
-              <CardDescription>Bids due in the next 7 days</CardDescription>
-            </div>
-            <Clock className="h-5 w-5 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {upcomingBids.length > 0 ? (
-                upcomingBids.slice(0, 5).map((bid) => (
-                  <div 
-                    key={bid.id} 
-                    className="flex items-center border-b pb-2 last:border-0 cursor-pointer hover:bg-gray-50 p-2 rounded-md"
-                    onClick={() => navigate(`/bids/${bid.id}`)}
-                  >
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium">{bid.bidName}</p>
-                        <Badge className={getStatusColor(bid.status)}>
-                          {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center text-xs text-gray-500">
-                        <span className="mr-2">Client: {bid.clientName}</span>
-                        <span>Due: {formatDate(bid.deadline)}</span>
-                      </div>
-                    </div>
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <div>
+            <CardTitle>Recent Activity</CardTitle>
+            <CardDescription>Latest actions in your account</CardDescription>
+          </div>
+          <ActivityIcon className="h-5 w-5 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {recentActivity.length > 0 ? (
+              recentActivity.slice(0, 5).map((activity) => (
+                <div key={activity.id} className="flex items-center space-x-3 border-b pb-2 last:border-0">
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm">
+                      <span className="font-medium">{activity.userName}</span>{' '}
+                      {activity.action} {activity.targetType}{' '}
+                      <span className="font-medium">{activity.targetName}</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDateTime(activity.timestamp)}
+                    </p>
                   </div>
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground py-4">
-                  No upcoming deadlines in the next 7 days
-                </p>
-              )}
-              
-              {upcomingBids.length > 5 && (
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => navigate('/bids')}
-                >
-                  View All Deadlines
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest actions in your account</CardDescription>
-            </div>
-            <ActivityIcon className="h-5 w-5 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentActivity.length > 0 ? (
-                recentActivity.slice(0, 5).map((activity) => (
-                  <div key={activity.id} className="flex items-center space-x-3 border-b pb-2 last:border-0">
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm">
-                        <span className="font-medium">{activity.userName}</span>{' '}
-                        {activity.action} {activity.targetType}{' '}
-                        <span className="font-medium">{activity.targetName}</span>
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDateTime(activity.timestamp)}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground py-4">
-                  No recent activity to display
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground py-4">
+                No recent activity to display
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
