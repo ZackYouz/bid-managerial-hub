@@ -29,6 +29,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Bids = () => {
   const [bids, setBids] = useState<Bid[]>([]);
@@ -163,7 +164,7 @@ const Bids = () => {
   
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Bids</h1>
           <p className="text-muted-foreground">
@@ -173,7 +174,7 @@ const Bids = () => {
         
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="shrink-0">
+            <Button className="ml-auto">
               <Plus className="mr-2 h-4 w-4" />
               New Bid
             </Button>
@@ -326,290 +327,390 @@ const Bids = () => {
         </Dialog>
       </div>
       
-      {/* Filters and search */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-          <Input
-            placeholder="Search bids..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+      {/* Bid Statistics */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Bids</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{bids.length}</div>
+            <p className="text-xs text-muted-foreground">
+              All registered bids
+            </p>
+          </CardContent>
+        </Card>
         
-        <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex gap-2">
-                <Filter className="h-4 w-4" />
-                <span className="hidden sm:inline">Filters</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-60">
-              <DropdownMenuLabel>Filter Bids</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              
-              <DropdownMenuGroup>
-                <DropdownMenuLabel className="text-xs font-normal text-gray-500 pt-2">
-                  Status
-                </DropdownMenuLabel>
-                <div className="p-2">
-                  <Select
-                    value={statusFilter}
-                    onValueChange={(value) => setStatusFilter(value as BidStatus | "all")}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Bids</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {bids.filter(bid => ['draft', 'pending', 'submitted'].includes(bid.status)).length}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Currently active bids
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Won Bids</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {bids.filter(bid => bid.status === 'won').length}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Successfully won bids
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Upcoming Deadlines</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {bids.filter(bid => 
+                ['draft', 'pending'].includes(bid.status) && 
+                getRemainingDays(bid.deadline) <= 7 && 
+                getRemainingDays(bid.deadline) >= 0
+              ).length}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Bids due within 7 days
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="list" className="w-full">
+        <TabsList>
+          <TabsTrigger value="list">Bid List</TabsTrigger>
+          <TabsTrigger value="report">Bid Report</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="list" className="space-y-4">
+          {/* Filters and Search */}
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-grow">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search bids..."
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => setStatusFilter(value as BidStatus | "all")}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="submitted">Submitted</SelectItem>
+                <SelectItem value="won">Won</SelectItem>
+                <SelectItem value="lost">Lost</SelectItem>
+                <SelectItem value="expired">Expired</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select
+              value={bidTypeFilter}
+              onValueChange={(value) => setBidTypeFilter(value as BidType | "all")}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="government">Government</SelectItem>
+                <SelectItem value="private">Private</SelectItem>
+                <SelectItem value="nonprofit">Nonprofit</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <ArrowUpDown className="mr-2 h-4 w-4" />
+                  Sort
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Sort By</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => handleSort('bidName')}>
+                  Bid Name {sortField === 'bidName' && (sortDirection === 'asc' ? '↑' : '↓')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleSort('clientName')}>
+                  Client Name {sortField === 'clientName' && (sortDirection === 'asc' ? '↑' : '↓')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleSort('deadline')}>
+                  Deadline {sortField === 'deadline' && (sortDirection === 'asc' ? '↑' : '↓')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleSort('status')}>
+                  Status {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleSort('createdAt')}>
+                  Created Date {sortField === 'createdAt' && (sortDirection === 'asc' ? '↑' : '↓')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          
+          {/* Bids Table */}
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead 
+                    className="cursor-pointer" 
+                    onClick={() => handleSort('bidName')}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Filter by status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="submitted">Submitted</SelectItem>
-                      <SelectItem value="won">Won</SelectItem>
-                      <SelectItem value="lost">Lost</SelectItem>
-                      <SelectItem value="expired">Expired</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </DropdownMenuGroup>
-              
-              <DropdownMenuSeparator />
-              
-              <DropdownMenuGroup>
-                <DropdownMenuLabel className="text-xs font-normal text-gray-500 pt-2">
-                  Bid Type
-                </DropdownMenuLabel>
-                <div className="p-2">
-                  <Select
-                    value={bidTypeFilter}
-                    onValueChange={(value) => setBidTypeFilter(value as BidType | "all")}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Filter by type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="government">Government</SelectItem>
-                      <SelectItem value="private">Private</SelectItem>
-                      <SelectItem value="nonprofit">Nonprofit</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </DropdownMenuGroup>
-              
-              <DropdownMenuSeparator />
-              
-              <div className="p-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full"
-                  onClick={() => {
-                    setStatusFilter("all");
-                    setBidTypeFilter("all");
-                    setSearchQuery("");
-                  }}
+                    <div className="flex items-center">
+                      Bid Name
+                      {sortField === 'bidName' && (
+                        sortDirection === 'asc' 
+                          ? <ArrowUpDown className="ml-2 h-4 w-4" /> 
+                          : <ArrowUpDown className="ml-2 h-4 w-4" />
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Purchase Type</TableHead>
+                  <TableHead>Deadline</TableHead>
+                  <TableHead>Days Left</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {currentItems.length > 0 ? (
+                  currentItems.map((bid) => {
+                    const daysLeft = getRemainingDays(bid.deadline);
+                    return (
+                      <TableRow 
+                        key={bid.id} 
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleRowClick(bid.id)}
+                      >
+                        <TableCell className="font-medium">{bid.bidName}</TableCell>
+                        <TableCell>{bid.clientName}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {bid.bidType.charAt(0).toUpperCase() + bid.bidType.slice(1)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{bid.purchaseType.charAt(0).toUpperCase() + bid.purchaseType.slice(1)}</TableCell>
+                        <TableCell>{formatDate(bid.deadline)}</TableCell>
+                        <TableCell>
+                          <span className={getDeadlineColor(bid.deadline)}>
+                            {daysLeft > 0 ? daysLeft : daysLeft === 0 ? 'Today' : 'Overdue'}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(bid.status)}>
+                            {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm" asChild>
+                            <span onClick={(e) => {
+                              e.stopPropagation();
+                              handleRowClick(bid.id);
+                            }}>View</span>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      {bids.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center">
+                          <FileText className="h-10 w-10 text-gray-300 mb-2" />
+                          <p className="text-muted-foreground">No bids found. Create your first bid!</p>
+                          <Button variant="outline" className="mt-4" onClick={() => setDialogOpen(true)}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Create Bid
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center">
+                          <Search className="h-10 w-10 text-gray-300 mb-2" />
+                          <p className="text-muted-foreground">No matching bids found</p>
+                          <Button variant="outline" className="mt-4" onClick={() => {
+                            setSearchQuery("");
+                            setStatusFilter("all");
+                            setBidTypeFilter("all");
+                          }}>
+                            Reset Filters
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          
+          {/* Pagination */}
+          {filteredBids.length > itemsPerPage && (
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredBids.length)} of {filteredBids.length} bids
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
                 >
-                  Reset Filters
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
                 </Button>
               </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex gap-2">
-                <ArrowUpDown className="h-4 w-4" />
-                <span className="hidden sm:inline">Sort</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Sort By</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleSort('bidName')}>
-                Bid Name {sortField === 'bidName' && (sortDirection === 'asc' ? '↑' : '↓')}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleSort('clientName')}>
-                Client Name {sortField === 'clientName' && (sortDirection === 'asc' ? '↑' : '↓')}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleSort('deadline')}>
-                Deadline {sortField === 'deadline' && (sortDirection === 'asc' ? '↑' : '↓')}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleSort('status')}>
-                Status {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleSort('createdAt')}>
-                Created Date {sortField === 'createdAt' && (sortDirection === 'asc' ? '↑' : '↓')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-      
-      {/* Bids Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Bid Name</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Deadline</TableHead>
-                <TableHead>Days Left</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Type</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentItems.length > 0 ? (
-                currentItems.map((bid) => {
-                  const daysLeft = getRemainingDays(bid.deadline);
-                  return (
-                    <TableRow 
-                      key={bid.id} 
-                      className="cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleRowClick(bid.id)}
-                    >
-                      <TableCell className="font-medium">{bid.bidName}</TableCell>
-                      <TableCell>{bid.clientName}</TableCell>
-                      <TableCell>{formatDate(bid.deadline)}</TableCell>
-                      <TableCell>
-                        <span className={getDeadlineColor(bid.deadline)}>
-                          {daysLeft > 0 ? daysLeft : daysLeft === 0 ? 'Today' : 'Overdue'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(bid.status)}>
-                          {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {bid.bidType.charAt(0).toUpperCase() + bid.bidType.slice(1)}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center">
-                    {bids.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center">
-                        <FileText className="h-10 w-10 text-gray-300 mb-2" />
-                        <p className="text-muted-foreground">No bids found. Create your first bid!</p>
-                        <Button variant="outline" className="mt-4" onClick={() => setDialogOpen(true)}>
-                          <Plus className="mr-2 h-4 w-4" />
-                          Create Bid
-                        </Button>
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="report" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Bid Statistics</CardTitle>
+              <CardDescription>
+                Overview of your bid performance and status distribution
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pl-2">
+              <div className="space-y-4">
+                {/* Status Distribution */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium">Bid Status Distribution</h3>
+                  {['draft', 'pending', 'submitted', 'won', 'lost', 'expired', 'cancelled'].map((status) => {
+                    const count = bids.filter(bid => bid.status === status).length;
+                    const percentage = bids.length > 0 ? (count / bids.length) * 100 : 0;
+                    
+                    return (
+                      <div key={status} className="flex items-center">
+                        <div className="w-1/4 font-medium text-sm">
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </div>
+                        <div className="w-3/4">
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 bg-muted rounded-full h-2.5 overflow-hidden">
+                              <div 
+                                className={`h-full rounded-full ${getStatusColor(status as BidStatus).replace('text-', 'bg-')}`}
+                                style={{ width: `${percentage}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-sm text-muted-foreground w-12">{count}</span>
+                          </div>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="flex flex-col items-center">
-                        <Search className="h-10 w-10 text-gray-300 mb-2" />
-                        <p className="text-muted-foreground">No matching bids found</p>
-                        <Button variant="outline" className="mt-4" onClick={() => {
-                          setSearchQuery("");
-                          setStatusFilter("all");
-                          setBidTypeFilter("all");
-                        }}>
-                          Reset Filters
-                        </Button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-10 grid gap-4 md:grid-cols-2">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Bid Type Distribution</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {['government', 'private', 'nonprofit', 'other'].map((type) => {
+                          const count = bids.filter(bid => bid.bidType === type).length;
+                          const percentage = bids.length > 0 ? (count / bids.length) * 100 : 0;
+                          
+                          return (
+                            <div key={type} className="flex items-center">
+                              <div className="w-1/3 font-medium text-sm">
+                                {type.charAt(0).toUpperCase() + type.slice(1)}
+                              </div>
+                              <div className="w-2/3">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1 bg-muted rounded-full h-2.5 overflow-hidden">
+                                    <div 
+                                      className="h-full rounded-full bg-primary"
+                                      style={{ width: `${percentage}%` }}
+                                    ></div>
+                                  </div>
+                                  <span className="text-sm text-muted-foreground w-12">{count}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    )}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-        
-        {/* Pagination */}
-        {filteredBids.length > itemsPerPage && (
-          <CardFooter className="flex items-center justify-between border-t px-6 py-4">
-            <div className="text-sm text-muted-foreground">
-              Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredBids.length)} of {filteredBids.length} bids
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
-            </div>
-          </CardFooter>
-        )}
-      </Card>
-      
-      {/* Quick Status Overview */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center">
-              <div className="bg-blue-100 p-2 rounded-full mb-2">
-                <FileCheck className="h-5 w-5 text-blue-500" />
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Purchase Type Distribution</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {['goods', 'services', 'works', 'consultancy'].map((type) => {
+                          const count = bids.filter(bid => bid.purchaseType === type).length;
+                          const percentage = bids.length > 0 ? (count / bids.length) * 100 : 0;
+                          
+                          return (
+                            <div key={type} className="flex items-center">
+                              <div className="w-1/3 font-medium text-sm">
+                                {type.charAt(0).toUpperCase() + type.slice(1)}
+                              </div>
+                              <div className="w-2/3">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1 bg-muted rounded-full h-2.5 overflow-hidden">
+                                    <div 
+                                      className="h-full rounded-full bg-primary"
+                                      style={{ width: `${percentage}%` }}
+                                    ></div>
+                                  </div>
+                                  <span className="text-sm text-muted-foreground w-12">{count}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
-              <p className="text-sm font-medium">Pending</p>
-              <p className="text-2xl font-bold">
-                {bids.filter(bid => bid.status === 'pending').length}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center">
-              <div className="bg-purple-100 p-2 rounded-full mb-2">
-                <Clock3 className="h-5 w-5 text-purple-500" />
-              </div>
-              <p className="text-sm font-medium">Submitted</p>
-              <p className="text-2xl font-bold">
-                {bids.filter(bid => bid.status === 'submitted').length}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center">
-              <div className="bg-green-100 p-2 rounded-full mb-2">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-              </div>
-              <p className="text-sm font-medium">Won</p>
-              <p className="text-2xl font-bold">
-                {bids.filter(bid => bid.status === 'won').length}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center">
-              <div className="bg-red-100 p-2 rounded-full mb-2">
-                <XCircle className="h-5 w-5 text-red-500" />
-              </div>
-              <p className="text-sm font-medium">Lost</p>
-              <p className="text-2xl font-bold">
-                {bids.filter(bid => bid.status === 'lost').length}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
