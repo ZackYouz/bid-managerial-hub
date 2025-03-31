@@ -1,3 +1,4 @@
+
 // User related types
 export interface User {
   id: string;
@@ -64,6 +65,15 @@ export interface Project {
   salesValue?: number;
   profit?: number;
   files: FileItem[];
+}
+
+// Contact information for clients and suppliers
+export interface Contact {
+  id: string;
+  name: string;
+  jobTitle?: string;
+  email?: string;
+  phone?: string;
 }
 
 // Client/Organization categories
