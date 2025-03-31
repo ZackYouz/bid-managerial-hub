@@ -1,6 +1,8 @@
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import { ArrowUpDown } from "lucide-react"
 
 const Table = React.forwardRef<
   HTMLTableElement,
@@ -81,6 +83,37 @@ const TableHead = React.forwardRef<
 ))
 TableHead.displayName = "TableHead"
 
+// New component to simplify creation of sortable table headers
+interface TableSortHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+  field: string;
+  sortField: string;
+  sortDirection: 'asc' | 'desc';
+  onSort: (field: string) => void;
+  children: React.ReactNode;
+}
+
+const TableSortHeader = ({
+  field,
+  sortField,
+  sortDirection,
+  onSort,
+  children,
+  className,
+  ...props
+}: TableSortHeaderProps) => (
+  <div 
+    className={cn("flex items-center cursor-pointer", className)}
+    onClick={() => onSort(field)}
+    {...props}
+  >
+    {children}
+    {sortField === field && (
+      <ArrowUpDown className="ml-2 h-4 w-4" />
+    )}
+  </div>
+)
+TableSortHeader.displayName = "TableSortHeader"
+
 const TableCell = React.forwardRef<
   HTMLTableCellElement,
   React.TdHTMLAttributes<HTMLTableCellElement>
@@ -114,4 +147,5 @@ export {
   TableRow,
   TableCell,
   TableCaption,
+  TableSortHeader,
 }
