@@ -1,4 +1,3 @@
-
 // User related types
 export interface User {
   id: string;
@@ -67,14 +66,17 @@ export interface Project {
   files: FileItem[];
 }
 
-// Client/Supplier entity
-export interface Organization {
+// Client/Organization categories
+export type OrganizationType = 'ngo' | 'company' | 'government' | 'individual' | 'other';
+
+// Client entity with active status
+export interface Client {
   id: string;
   name: string;
   code: string;
   registrationNumber?: string;
   registrationFinancial?: string;
-  type: 'ngo' | 'company' | 'government' | 'individual' | 'other';
+  type: OrganizationType;
   address?: string;
   location?: {
     lat: number;
@@ -85,15 +87,18 @@ export interface Organization {
   emails: string[];
   contacts: Contact[];
   isActive: boolean;
+  hasActiveProjects: boolean;
 }
 
-// Contact person
-export interface Contact {
-  id: string;
-  name: string;
-  jobTitle?: string;
-  email?: string;
-  phone?: string;
+// Client stats
+export interface ClientStats {
+  totalClients: number;
+  activeClients: number;
+  byType: {
+    type: OrganizationType;
+    count: number;
+  }[];
+  clientsWithProjects: number;
 }
 
 // Product base interface

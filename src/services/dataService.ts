@@ -1,5 +1,4 @@
-
-import { Bid, Project, FileItem, CostItem, Activity, User, BidStatus, BidType, PurchaseType } from "../types";
+import { Bid, Project, FileItem, CostItem, Activity, User, BidStatus, BidType, PurchaseType, Client, ClientStats, OrganizationType } from "../types";
 
 // Helper function to generate unique IDs
 const generateId = (): string => {
@@ -787,4 +786,200 @@ export const initializeSampleData = () => {
       });
     }
   }
+};
+
+// Client-related mock data and functions
+let clients: Client[] = [];
+
+export const getClients = (): Client[] => {
+  // Return cached clients if available
+  if (clients.length > 0) {
+    return [...clients];
+  }
+
+  // Generate mock client data
+  clients = [
+    {
+      id: "client-001",
+      name: "Global Relief NGO",
+      code: "GR-2023",
+      registrationNumber: "NGO1234567",
+      registrationFinancial: "FIN9876543",
+      type: "ngo",
+      address: "123 Humanitarian Way, Geneva, Switzerland",
+      location: { lat: 46.2044, lng: 6.1432 },
+      phone: "+41 22 123 4567",
+      mobile: "+41 79 987 6543",
+      emails: ["contact@globalrelief.org", "info@globalrelief.org"],
+      contacts: [
+        { id: "contact-001", name: "Jane Smith", jobTitle: "Program Director", email: "jane@globalrelief.org", phone: "+41 22 123 4567" },
+        { id: "contact-002", name: "John Doe", jobTitle: "Procurement Officer", email: "john@globalrelief.org", phone: "+41 22 123 4568" }
+      ],
+      isActive: true,
+      hasActiveProjects: true
+    },
+    {
+      id: "client-002",
+      name: "TechSolutions Corp",
+      code: "TSC-2023",
+      registrationNumber: "CORP7654321",
+      registrationFinancial: "FIN1234567",
+      type: "company",
+      address: "456 Innovation Blvd, San Francisco, CA, USA",
+      location: { lat: 37.7749, lng: -122.4194 },
+      phone: "+1 415 555 1234",
+      mobile: "+1 415 555 5678",
+      emails: ["info@techsolutions.com", "sales@techsolutions.com"],
+      contacts: [
+        { id: "contact-003", name: "Sarah Johnson", jobTitle: "CTO", email: "sarah@techsolutions.com", phone: "+1 415 555 2345" },
+        { id: "contact-004", name: "Mike Williams", jobTitle: "Purchasing Manager", email: "mike@techsolutions.com", phone: "+1 415 555 3456" }
+      ],
+      isActive: true,
+      hasActiveProjects: false
+    },
+    {
+      id: "client-003",
+      name: "Ministry of Education",
+      code: "MOE-2023",
+      registrationNumber: "GOV9876543",
+      registrationFinancial: "FIN5432167",
+      type: "government",
+      address: "789 Government Plaza, Capital City",
+      location: { lat: 51.5074, lng: -0.1278 },
+      phone: "+44 20 1234 5678",
+      mobile: "+44 7700 900123",
+      emails: ["info@education.gov", "procurement@education.gov"],
+      contacts: [
+        { id: "contact-005", name: "Robert Brown", jobTitle: "Procurement Director", email: "robert@education.gov", phone: "+44 20 1234 5679" },
+        { id: "contact-006", name: "Elizabeth Green", jobTitle: "Finance Manager", email: "elizabeth@education.gov", phone: "+44 20 1234 5680" }
+      ],
+      isActive: true,
+      hasActiveProjects: true
+    },
+    {
+      id: "client-004",
+      name: "Dr. Alan Wilson",
+      code: "AW-2023",
+      registrationNumber: "IND5678901",
+      type: "individual",
+      address: "321 Professional Ave, Melbourne, Australia",
+      location: { lat: -37.8136, lng: 144.9631 },
+      phone: "+61 3 9876 5432",
+      mobile: "+61 4 1234 5678",
+      emails: ["dr.wilson@email.com"],
+      contacts: [
+        { id: "contact-007", name: "Alan Wilson", jobTitle: "Consultant", email: "dr.wilson@email.com", phone: "+61 3 9876 5432" }
+      ],
+      isActive: false,
+      hasActiveProjects: false
+    },
+    {
+      id: "client-005",
+      name: "Community Development Association",
+      code: "CDA-2023",
+      registrationNumber: "NGO9876543",
+      type: "ngo",
+      address: "567 Community Road, Nairobi, Kenya",
+      location: { lat: -1.2921, lng: 36.8219 },
+      phone: "+254 20 123 4567",
+      mobile: "+254 7XX XXX XXX",
+      emails: ["info@cda.org", "projects@cda.org", "admin@cda.org"],
+      contacts: [
+        { id: "contact-008", name: "Grace Mwangi", jobTitle: "Executive Director", email: "grace@cda.org", phone: "+254 7XX XXX XXX" },
+        { id: "contact-009", name: "David Ochieng", jobTitle: "Project Manager", email: "david@cda.org", phone: "+254 7XX XXX XXX" }
+      ],
+      isActive: true,
+      hasActiveProjects: true
+    },
+    {
+      id: "client-006",
+      name: "EcoSolutions Ltd",
+      code: "ECO-2023",
+      registrationNumber: "CORP1234987",
+      type: "company",
+      address: "890 Green Street, Berlin, Germany",
+      location: { lat: 52.5200, lng: 13.4050 },
+      phone: "+49 30 123456",
+      mobile: "+49 151 12345678",
+      emails: ["contact@ecosolutions.de", "info@ecosolutions.de"],
+      contacts: [
+        { id: "contact-010", name: "Hans Mueller", jobTitle: "CEO", email: "hans@ecosolutions.de", phone: "+49 30 123457" },
+        { id: "contact-011", name: "Anna Schmidt", jobTitle: "Sustainability Officer", email: "anna@ecosolutions.de", phone: "+49 30 123458" }
+      ],
+      isActive: true,
+      hasActiveProjects: false
+    }
+  ];
+  
+  return [...clients];
+};
+
+export const getClientStats = (): ClientStats => {
+  const allClients = getClients();
+  
+  // Count by type
+  const typeCountMap: Record<OrganizationType, number> = {
+    ngo: 0,
+    company: 0,
+    government: 0,
+    individual: 0,
+    other: 0
+  };
+  
+  allClients.forEach(client => {
+    if (typeCountMap[client.type] !== undefined) {
+      typeCountMap[client.type]++;
+    }
+  });
+  
+  const byType = Object.entries(typeCountMap)
+    .filter(([_, count]) => count > 0)
+    .map(([type, count]) => ({
+      type: type as OrganizationType,
+      count
+    }));
+  
+  return {
+    totalClients: allClients.length,
+    activeClients: allClients.filter(client => client.isActive).length,
+    byType,
+    clientsWithProjects: allClients.filter(client => client.hasActiveProjects).length
+  };
+};
+
+// Add, update, and delete client functions for future implementation
+export const addClient = (client: Omit<Client, "id">): Client => {
+  const newClient = {
+    ...client,
+    id: `client-${String(clients.length + 1).padStart(3, '0')}`
+  };
+  
+  clients.push(newClient);
+  return newClient;
+};
+
+export const updateClient = (id: string, clientData: Partial<Client>): Client | null => {
+  const index = clients.findIndex(client => client.id === id);
+  
+  if (index === -1) {
+    return null;
+  }
+  
+  clients[index] = {
+    ...clients[index],
+    ...clientData
+  };
+  
+  return clients[index];
+};
+
+export const deleteClient = (id: string): boolean => {
+  const initialLength = clients.length;
+  clients = clients.filter(client => client.id !== id);
+  
+  return clients.length !== initialLength;
+};
+
+export const getClientById = (id: string): Client | undefined => {
+  return clients.find(client => client.id === id);
 };

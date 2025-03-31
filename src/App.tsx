@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +13,8 @@ import Layout from "./components/Layout";
 import BidDetails from "./pages/BidDetails";
 import ProjectDetails from "./pages/ProjectDetails";
 import Login from "./pages/Login";
+import Clients from "./pages/Clients";
+import ClientDetails from "./pages/ClientDetails";
 import { useState, useEffect } from "react";
 import { User } from "./types";
 
@@ -22,7 +23,6 @@ const queryClient = new QueryClient();
 const App = () => {
   const [user, setUser] = useState<User | null>(null);
 
-  // Check for saved user data on app load
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
@@ -57,8 +57,9 @@ const App = () => {
                 <Route path="projects" element={<Projects />} />
                 <Route path="projects/:id" element={<ProjectDetails />} />
                 <Route path="projects/new" element={<ProjectDetails />} />
-                <Route path="clients" element={<NotFound />} /> {/* Placeholder for future implementation */}
-                <Route path="clients/new" element={<NotFound />} /> {/* Placeholder for future implementation */}
+                <Route path="clients" element={<Clients />} />
+                <Route path="clients/:id" element={<ClientDetails />} />
+                <Route path="clients/new" element={<ClientDetails />} />
                 <Route path="suppliers" element={<NotFound />} /> {/* Placeholder for future implementation */}
                 <Route path="suppliers/new" element={<NotFound />} /> {/* Placeholder for future implementation */}
                 <Route path="products" element={<NotFound />} /> {/* Placeholder for future implementation */}

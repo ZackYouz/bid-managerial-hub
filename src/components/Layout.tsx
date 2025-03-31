@@ -1,4 +1,3 @@
-
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { User } from "../types";
@@ -12,7 +11,10 @@ import {
   Menu, 
   X, 
   Bell, 
-  Search 
+  Search, 
+  Users,
+  Package,
+  Truck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { initializeSampleData, getUpcomingDeadlines } from "@/services/dataService";
@@ -39,13 +41,10 @@ const Layout = ({ user, onLogout }: LayoutProps) => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Initialize sample data for demo purposes
     initializeSampleData();
     
-    // Update upcoming deadlines count
     setUpcomingDeadlines(getUpcomingDeadlines(7).length);
     
-    // Update upcoming deadlines every 5 minutes
     const interval = setInterval(() => {
       setUpcomingDeadlines(getUpcomingDeadlines(7).length);
     }, 5 * 60 * 1000);
@@ -69,6 +68,21 @@ const Layout = ({ user, onLogout }: LayoutProps) => {
       label: 'Projects', 
       icon: <FolderOpen className="h-5 w-5" /> 
     },
+    {
+      to: '/clients',
+      label: 'Clients',
+      icon: <Users className="h-5 w-5" />
+    },
+    {
+      to: '/suppliers',
+      label: 'Suppliers',
+      icon: <Truck className="h-5 w-5" />
+    },
+    {
+      to: '/products',
+      label: 'Products',
+      icon: <Package className="h-5 w-5" />
+    },
     { 
       to: '/reports', 
       label: 'Reports', 
@@ -91,7 +105,6 @@ const Layout = ({ user, onLogout }: LayoutProps) => {
   
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
-      {/* Mobile sidebar toggle */}
       <div className="fixed top-4 left-4 z-50 lg:hidden">
         <Button 
           variant="outline" 
@@ -103,13 +116,11 @@ const Layout = ({ user, onLogout }: LayoutProps) => {
         </Button>
       </div>
       
-      {/* Sidebar */}
       <aside 
         className={`${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } fixed inset-y-0 left-0 z-40 w-64 transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 bg-white border-r border-gray-200 flex flex-col`}
       >
-        {/* Logo */}
         <div className="flex items-center gap-2 px-6 py-6 border-b border-gray-200">
           <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-2 rounded-lg">
             <FileText className="h-6 w-6" />
@@ -117,7 +128,6 @@ const Layout = ({ user, onLogout }: LayoutProps) => {
           <h1 className="text-xl font-bold">BidFlow Pro</h1>
         </div>
         
-        {/* Navigation */}
         <nav className="flex-1 px-4 py-6 space-y-8 overflow-y-auto">
           <div className="space-y-1">
             {mainLinks.map((link) => (
@@ -178,7 +188,6 @@ const Layout = ({ user, onLogout }: LayoutProps) => {
           </div>
         </nav>
         
-        {/* User Profile */}
         <div className="flex items-center gap-3 p-4 border-t border-gray-200">
           <Avatar>
             <AvatarImage src={user.avatar} alt={user.name} />
@@ -191,9 +200,7 @@ const Layout = ({ user, onLogout }: LayoutProps) => {
         </div>
       </aside>
       
-      {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
         <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 shadow-sm">
           <div className="flex items-center gap-4 w-full max-w-md">
             <Search className="h-5 w-5 text-gray-400" />
@@ -276,13 +283,11 @@ const Layout = ({ user, onLogout }: LayoutProps) => {
           </div>
         </header>
         
-        {/* Page content */}
         <main className="flex-1 overflow-y-auto px-6 py-6 bg-gray-50">
           <Outlet />
         </main>
       </div>
       
-      {/* Mobile overlay */}
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
