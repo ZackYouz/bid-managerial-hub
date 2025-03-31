@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getBids, createBid } from "@/services/dataService";
-import { Bid, BidStatus, BidType } from "@/types";
+import { Bid, BidStatus, BidType, PurchaseType } from "@/types";
 import { formatDate, getStatusColor, getDeadlineColor, getRemainingDays } from "@/utils/helpers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +47,7 @@ const Bids = () => {
     bidName: "",
     clientName: "",
     bidType: "private" as BidType,
+    purchaseType: "goods" as PurchaseType,
     status: "draft" as BidStatus,
     deadline: "",
     notes: "",
@@ -135,6 +136,7 @@ const Bids = () => {
       bidName: "",
       clientName: "",
       bidType: "private",
+      purchaseType: "goods",
       status: "draft",
       deadline: "",
       notes: "",
@@ -229,6 +231,26 @@ const Bids = () => {
                     <SelectItem value="private">Private</SelectItem>
                     <SelectItem value="nonprofit">Nonprofit</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="purchaseType" className="text-right">
+                  Purchase Type *
+                </Label>
+                <Select
+                  value={newBid.purchaseType}
+                  onValueChange={(value) => setNewBid({ ...newBid, purchaseType: value as PurchaseType })}
+                >
+                  <SelectTrigger id="purchaseType" className="col-span-3">
+                    <SelectValue placeholder="Select purchase type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="goods">Goods</SelectItem>
+                    <SelectItem value="services">Services</SelectItem>
+                    <SelectItem value="works">Works</SelectItem>
+                    <SelectItem value="consultancy">Consultancy</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

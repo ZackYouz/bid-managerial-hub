@@ -1,4 +1,5 @@
-import { Bid, Project, FileItem, CostItem, Activity, User, BidStatus, BidType } from "../types";
+
+import { Bid, Project, FileItem, CostItem, Activity, User, BidStatus, BidType, PurchaseType } from "../types";
 
 // Helper function to generate unique IDs
 const generateId = (): string => {
@@ -32,7 +33,7 @@ const saveToStorage = <T>(key: string, data: T): void => {
 
 // Bid related operations
 export const getBids = (): Bid[] => {
-  return getFromStorage<Bid[]>('bids', []);
+  return getFromStorage<Bid[]>('bids', getMockBids());
 };
 
 export const getBidById = (id: string): Bid | undefined => {
@@ -107,7 +108,7 @@ export const deleteBid = (id: string): boolean => {
 
 // Project related operations
 export const getProjects = (): Project[] => {
-  return getFromStorage<Project[]>('projects', []);
+  return getFromStorage<Project[]>('projects', getMockProjects());
 };
 
 export const getProjectById = (id: string): Project | undefined => {
@@ -415,12 +416,12 @@ export function getDashboardStats() {
     profitValue,
     estimatedProfits,
     upcomingDeadlines: getUpcomingDeadlines().length,
-    recentActivity: generateMockActivities(),
+    recentActivity: getMockActivities(),
   };
 }
 
 // Generate some mock activities
-function generateMockActivities() {
+function getMockActivities(): Activity[] {
   return [
     {
       id: "act1",
@@ -491,25 +492,21 @@ function generateMockActivities() {
   ];
 }
 
-// Get upcoming deadlines
-export function getUpcomingDeadlines() {
-  const bids = getBids();
-  const today = new Date();
-  const twoWeeksFromNow = new Date(today);
-  twoWeeksFromNow.setDate(today.getDate() + 14);
+// Calculate remaining days until deadline
+export const getRemainingDays = (deadline: string): number => {
+  const now = new Date();
+  const deadlineDate = new Date(deadline);
   
-  return bids.filter(bid => {
-    if (bid.status === 'draft' || bid.status === 'pending') {
-      const deadline = new Date(bid.deadline);
-      return deadline >= today && deadline <= twoWeeksFromNow;
-    }
-    return false;
-  });
-}
+  // Reset time component for accurate day calculation
+  now.setHours(0, 0, 0, 0);
+  deadlineDate.setHours(0, 0, 0, 0);
+  
+  const timeDiff = deadlineDate.getTime() - now.getTime();
+  return Math.ceil(timeDiff / (1000 * 3600 * 24));
+};
 
-// Get bids
-export function getBids() {
-  // Mock bid data
+// Mock data generators
+function getMockBids(): Bid[] {
   return [
     {
       id: "bid1",
@@ -597,12 +594,10 @@ export function getBids() {
       assignedTo: ["user1"],
       tags: ["Training", "Technical"]
     }
-  ];
+  ] as Bid[];
 }
 
-// Get projects
-export function getProjects() {
-  // Mock project data
+function getMockProjects(): Project[] {
   return [
     {
       id: "proj1",
@@ -675,21 +670,8 @@ export function getProjects() {
       profit: 60000,
       files: []
     }
-  ];
+  ] as Project[];
 }
-
-// Calculate remaining days until deadline
-export const getRemainingDays = (deadline: string): number => {
-  const now = new Date();
-  const deadlineDate = new Date(deadline);
-  
-  // Reset time component for accurate day calculation
-  now.setHours(0, 0, 0, 0);
-  deadlineDate.setHours(0, 0, 0, 0);
-  
-  const timeDiff = deadlineDate.getTime() - now.getTime();
-  return Math.ceil(timeDiff / (1000 * 3600 * 24));
-};
 
 // Add sample data for demo purposes
 export const initializeSampleData = () => {
@@ -701,6 +683,7 @@ export const initializeSampleData = () => {
         bidName: 'Office Renovation',
         clientName: 'Acme Corporation',
         bidType: 'private',
+        purchaseType: 'works',
         status: 'pending',
         deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         notes: 'Complete renovation of their headquarters office space',
@@ -711,6 +694,7 @@ export const initializeSampleData = () => {
         bidName: 'IT Infrastructure Upgrade',
         clientName: 'City Government',
         bidType: 'government',
+        purchaseType: 'goods',
         status: 'submitted',
         deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
         notes: 'Complete overhaul of network and server infrastructure',
@@ -721,6 +705,7 @@ export const initializeSampleData = () => {
         bidName: 'Community Center Construction',
         clientName: 'Local Nonprofit',
         bidType: 'nonprofit',
+        purchaseType: 'works',
         status: 'won',
         deadline: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
         notes: 'New construction for community outreach center',
@@ -731,6 +716,7 @@ export const initializeSampleData = () => {
         bidName: 'Software Implementation',
         clientName: 'Global Industries',
         bidType: 'private',
+        purchaseType: 'services',
         status: 'lost',
         deadline: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
         notes: 'ERP software implementation project',
@@ -741,6 +727,7 @@ export const initializeSampleData = () => {
         bidName: 'Annual Maintenance Contract',
         clientName: 'TechSolutions Inc',
         bidType: 'private',
+        purchaseType: 'services',
         status: 'pending',
         deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
         notes: 'Annual maintenance contract for their datacenter',
