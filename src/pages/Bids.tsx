@@ -515,10 +515,12 @@ const Bids = () => {
                         <TableCell>{bid.clientName}</TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            {bid.bidType.charAt(0).toUpperCase() + bid.bidType.slice(1)}
+                            {bid.bidType ? (bid.bidType.charAt(0).toUpperCase() + bid.bidType.slice(1)) : 'N/A'}
                           </Badge>
                         </TableCell>
-                        <TableCell>{bid.purchaseType.charAt(0).toUpperCase() + bid.purchaseType.slice(1)}</TableCell>
+                        <TableCell>
+                          {bid.purchaseType ? (bid.purchaseType.charAt(0).toUpperCase() + bid.purchaseType.slice(1)) : 'N/A'}
+                        </TableCell>
                         <TableCell>{formatDate(bid.deadline)}</TableCell>
                         <TableCell>
                           <span className={getDeadlineColor(bid.deadline)}>
@@ -527,7 +529,7 @@ const Bids = () => {
                         </TableCell>
                         <TableCell>
                           <Badge className={getStatusColor(bid.status)}>
-                            {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
+                            {bid.status ? (bid.status.charAt(0).toUpperCase() + bid.status.slice(1)) : 'N/A'}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -621,7 +623,7 @@ const Bids = () => {
                     return (
                       <div key={status} className="flex items-center">
                         <div className="w-1/4 font-medium text-sm">
-                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                          {status ? (status.charAt(0).toUpperCase() + status.slice(1)) : 'N/A'}
                         </div>
                         <div className="w-3/4">
                           <div className="flex items-center gap-2">
@@ -653,7 +655,7 @@ const Bids = () => {
                           return (
                             <div key={type} className="flex items-center">
                               <div className="w-1/3 font-medium text-sm">
-                                {type.charAt(0).toUpperCase() + type.slice(1)}
+                                {type ? (type.charAt(0).toUpperCase() + type.slice(1)) : 'N/A'}
                               </div>
                               <div className="w-2/3">
                                 <div className="flex items-center gap-2">
@@ -686,7 +688,7 @@ const Bids = () => {
                           return (
                             <div key={type} className="flex items-center">
                               <div className="w-1/3 font-medium text-sm">
-                                {type.charAt(0).toUpperCase() + type.slice(1)}
+                                {type ? (type.charAt(0).toUpperCase() + type.slice(1)) : 'N/A'}
                               </div>
                               <div className="w-2/3">
                                 <div className="flex items-center gap-2">
