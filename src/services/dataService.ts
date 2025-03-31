@@ -1,11 +1,9 @@
 import { Bid, Project, FileItem, CostItem, Activity, User, BidStatus, BidType, PurchaseType, Client, ClientStats, OrganizationType, Supplier, SupplierStats, BaseProduct, SupplyProduct, TransportService, ProductCategory } from "../types";
 
-// Helper function to generate unique IDs
 const generateId = (): string => {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
 };
 
-// Generate a bid number based on date, client name, and bid name
 const generateBidNumber = (clientName: string, bidName: string): string => {
   const date = new Date();
   const year = date.getFullYear();
@@ -19,18 +17,15 @@ const generateBidNumber = (clientName: string, bidName: string): string => {
   return `${formattedDate}-${formattedClient}-${formattedBid}`;
 };
 
-// Get data from localStorage or return default value
 const getFromStorage = <T>(key: string, defaultValue: T): T => {
   const storedData = localStorage.getItem(key);
   return storedData ? JSON.parse(storedData) : defaultValue;
 };
 
-// Save data to localStorage
 const saveToStorage = <T>(key: string, data: T): void => {
   localStorage.setItem(key, JSON.stringify(data));
 };
 
-// Bid related operations
 export const getBids = (): Bid[] => {
   return getFromStorage<Bid[]>('bids', getMockBids());
 };
@@ -51,7 +46,7 @@ export const createBid = (bidData: Omit<Bid, 'id' | 'bidNumber' | 'createdAt'>):
   
   saveToStorage('bids', [...bids, newBid]);
   addActivity({
-    userId: '1', // This would be the logged-in user in a real app
+    userId: '1',
     userName: 'System',
     action: 'created',
     targetType: 'bid',
@@ -73,7 +68,7 @@ export const updateBid = (id: string, bidData: Partial<Bid>): Bid | null => {
   
   saveToStorage('bids', bids);
   addActivity({
-    userId: '1', // This would be the logged-in user in a real app
+    userId: '1',
     userName: 'System',
     action: 'updated',
     targetType: 'bid',
@@ -94,7 +89,7 @@ export const deleteBid = (id: string): boolean => {
   saveToStorage('bids', filteredBids);
   
   addActivity({
-    userId: '1', // This would be the logged-in user in a real app
+    userId: '1',
     userName: 'System',
     action: 'deleted',
     targetType: 'bid',
@@ -105,7 +100,6 @@ export const deleteBid = (id: string): boolean => {
   return true;
 };
 
-// Project related operations
 export const getProjects = (): Project[] => {
   return getFromStorage<Project[]>('projects', getMockProjects());
 };
@@ -185,7 +179,6 @@ export const deleteProject = (id: string): boolean => {
   return true;
 };
 
-// File related operations
 export const addFileToProject = (projectId: string, fileData: Omit<FileItem, 'id' | 'createdAt' | 'updatedAt'>): FileItem | null => {
   const projects = getProjects();
   const projectIndex = projects.findIndex(project => project.id === projectId);
@@ -239,7 +232,6 @@ export const removeFileFromProject = (projectId: string, fileId: string): boolea
   return true;
 };
 
-// Cost related operations
 export const getCosts = (): CostItem[] => {
   return getFromStorage<CostItem[]>('costs', []);
 };
@@ -283,7 +275,6 @@ export const deleteCostItem = (id: string): boolean => {
   return true;
 };
 
-// Activity tracking
 export const getActivities = (): Activity[] => {
   return getFromStorage<Activity[]>('activities', []);
 };
@@ -297,13 +288,12 @@ export const addActivity = (activityData: Omit<Activity, 'id' | 'timestamp'>): A
     ...activityData
   };
   
-  const updatedActivities = [newActivity, ...activities].slice(0, 100); // Keep only the last 100 activities
+  const updatedActivities = [newActivity, ...activities].slice(0, 100);
   saveToStorage('activities', updatedActivities);
   
   return newActivity;
 };
 
-// User related operations (basic implementation for demo)
 export const getUsers = (): User[] => {
   return getFromStorage<User[]>('users', [
     {
@@ -330,18 +320,14 @@ export const getUsers = (): User[] => {
   ]);
 };
 
-// User authentication (simplified for demo)
 export const authenticateUser = (email: string, password: string): User | null => {
   const users = getUsers();
   
-  // In a real application, we would verify the password hash
-  // Here we're just checking if the email exists and returning that user
   const user = users.find(user => user.email.toLowerCase() === email.toLowerCase());
   
   return user || null;
 };
 
-// Calendar/deadline related utilities
 export const getUpcomingDeadlines = (daysAhead: number = 7): Bid[] => {
   const bids = getBids();
   const now = new Date();
@@ -356,7 +342,6 @@ export const getUpcomingDeadlines = (daysAhead: number = 7): Bid[] => {
   });
 };
 
-// Update expired bids
 export const updateExpiredBids = (): void => {
   const bids = getBids();
   const now = new Date();
@@ -386,16 +371,13 @@ export const updateExpiredBids = (): void => {
   }
 };
 
-// Dashboard statistics
 export function getDashboardStats() {
   const bids = getBids();
   const projects = getProjects();
   
-  // Calculate profit values
   const completedProjects = projects.filter(project => project.status === 'completed');
   const profitValue = completedProjects.reduce((sum, project) => sum + (project.profit || 0), 0);
   
-  // Calculate estimated profits from bids
   const estimatedProfits = bids.reduce((sum, bid) => {
     if (bid.quotedValue && bid.costValue) {
       return sum + (bid.quotedValue - bid.costValue);
@@ -419,7 +401,6 @@ export function getDashboardStats() {
   };
 }
 
-// Generate some mock activities
 function getMockActivities(): Activity[] {
   return [
     {
@@ -431,7 +412,7 @@ function getMockActivities(): Activity[] {
       targetType: "bid",
       targetId: "bid1",
       targetName: "City Hospital RFP",
-      timestamp: new Date(Date.now() - 1000 * 60 * 10).toISOString(), // 10 minutes ago
+      timestamp: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
     },
     {
       id: "act2",
@@ -442,7 +423,7 @@ function getMockActivities(): Activity[] {
       targetType: "project",
       targetId: "proj1",
       targetName: "School Renovation",
-      timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(), // 45 minutes ago
+      timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
     },
     {
       id: "act3",
@@ -453,7 +434,7 @@ function getMockActivities(): Activity[] {
       targetType: "bid",
       targetId: "bid3",
       targetName: "Municipal Water Supply",
-      timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(), // 2 hours ago
+      timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
     },
     {
       id: "act4",
@@ -464,7 +445,7 @@ function getMockActivities(): Activity[] {
       targetType: "client",
       targetId: "client2",
       targetName: "GlobalTech Inc.",
-      timestamp: new Date(Date.now() - 1000 * 60 * 180).toISOString(), // 3 hours ago
+      timestamp: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
     },
     {
       id: "act5",
@@ -475,7 +456,7 @@ function getMockActivities(): Activity[] {
       targetType: "supplier",
       targetId: "supp1",
       targetName: "Quality Builders Co.",
-      timestamp: new Date(Date.now() - 1000 * 60 * 360).toISOString(), // 6 hours ago
+      timestamp: new Date(Date.now() - 1000 * 60 * 360).toISOString(),
     },
     {
       id: "act6",
@@ -486,17 +467,15 @@ function getMockActivities(): Activity[] {
       targetType: "project",
       targetId: "proj2",
       targetName: "Office Remodeling",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
     },
   ];
 }
 
-// Calculate remaining days until deadline
 export const getRemainingDays = (deadline: string): number => {
   const now = new Date();
   const deadlineDate = new Date(deadline);
   
-  // Reset time component for accurate day calculation
   now.setHours(0, 0, 0, 0);
   deadlineDate.setHours(0, 0, 0, 0);
   
@@ -504,7 +483,6 @@ export const getRemainingDays = (deadline: string): number => {
   return Math.ceil(timeDiff / (1000 * 3600 * 24));
 };
 
-// Mock data generators
 function getMockBids(): Bid[] {
   return [
     {
@@ -672,11 +650,8 @@ function getMockProjects(): Project[] {
   ] as Project[];
 }
 
-// Add sample data for demo purposes
 export const initializeSampleData = () => {
-  // Only initialize if no data exists yet
   if (getBids().length === 0) {
-    // Sample bid data
     const sampleBids: Omit<Bid, 'id' | 'bidNumber' | 'createdAt'>[] = [
       {
         bidName: 'Office Renovation',
@@ -735,10 +710,8 @@ export const initializeSampleData = () => {
       }
     ];
     
-    // Create the sample bids
     const createdBids = sampleBids.map(bid => createBid(bid));
     
-    // Create sample projects for the won bid
     const wonBid = createdBids.find(bid => bid.status === 'won');
     if (wonBid) {
       createProject({
@@ -751,7 +724,6 @@ export const initializeSampleData = () => {
         clientName: wonBid.clientName
       });
       
-      // Add sample cost items for the won bid
       createCostItem({
         bidId: wonBid.id,
         category: 'Materials',
@@ -788,16 +760,13 @@ export const initializeSampleData = () => {
   }
 };
 
-// Client-related mock data and functions
 let clients: Client[] = [];
 
 export const getClients = (): Client[] => {
-  // Return cached clients if available
   if (clients.length > 0) {
     return [...clients];
   }
 
-  // Generate mock client data
   clients = [
     {
       id: "client-001",
@@ -917,7 +886,6 @@ export const getClients = (): Client[] => {
 export const getClientStats = (): ClientStats => {
   const allClients = getClients();
   
-  // Count by type
   const typeCountMap: Record<OrganizationType, number> = {
     ngo: 0,
     company: 0,
@@ -947,7 +915,6 @@ export const getClientStats = (): ClientStats => {
   };
 };
 
-// Add, update, and delete client functions for future implementation
 export const addClient = (client: Omit<Client, "id">): Client => {
   const newClient = {
     ...client,
@@ -984,16 +951,13 @@ export const getClientById = (id: string): Client | undefined => {
   return clients.find(client => client.id === id);
 };
 
-// Supplier-related functions
 let suppliers: Supplier[] = [];
 
 export const getSuppliers = (): Supplier[] => {
-  // Return cached suppliers if available
   if (suppliers.length > 0) {
     return [...suppliers];
   }
 
-  // Generate mock supplier data
   suppliers = [
     {
       id: "sup-001",
@@ -1074,7 +1038,6 @@ export const getSuppliers = (): Supplier[] => {
 export const getSupplierStats = (): SupplierStats => {
   const allSuppliers = getSuppliers();
   
-  // Count by type
   const typeCountMap: Record<OrganizationType, number> = {
     ngo: 0,
     company: 0,
@@ -1104,7 +1067,6 @@ export const getSupplierStats = (): SupplierStats => {
   };
 };
 
-// Add, update, and delete supplier functions
 export const addSupplier = (supplier: Omit<Supplier, "id">): Supplier => {
   const newSupplier = {
     ...supplier,
@@ -1141,16 +1103,13 @@ export const getSupplierById = (id: string): Supplier | undefined => {
   return suppliers.find(supplier => supplier.id === id);
 };
 
-// Product-related functions
 let products: (SupplyProduct | TransportService)[] = [];
 
 export const getProducts = (): (SupplyProduct | TransportService)[] => {
-  // Return cached products if available
   if (products.length > 0) {
     return [...products];
   }
 
-  // Generate mock product data
   products = [
     {
       id: "prod-001",
@@ -1235,14 +1194,23 @@ export const getProductCategories = (): ProductCategory[] => {
   return Array.from(categories);
 };
 
-export const addProduct = (productData: Omit<SupplyProduct | TransportService, "id">): SupplyProduct | TransportService => {
+export const addProduct = (productData: Omit<SupplyProduct, "id"> | Omit<TransportService, "id">): SupplyProduct | TransportService => {
   const newProduct = {
     ...productData,
     id: `prod-${String(products.length + 1).padStart(3, '0')}`
   };
   
-  products.push(newProduct);
-  return newProduct;
+  const isTransportService = 'vehicleType' in newProduct && 'billingMethod' in newProduct;
+  
+  if (isTransportService) {
+    const transportProduct = newProduct as TransportService;
+    products.push(transportProduct);
+    return transportProduct;
+  } else {
+    const supplyProduct = newProduct as SupplyProduct;
+    products.push(supplyProduct);
+    return supplyProduct;
+  }
 };
 
 export const updateProduct = (id: string, productData: Partial<SupplyProduct | TransportService>): SupplyProduct | TransportService | null => {
