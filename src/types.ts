@@ -1,3 +1,4 @@
+
 // User related types
 export interface User {
   id: string;
@@ -8,10 +9,13 @@ export interface User {
 }
 
 // Bid status types
-export type BidStatus = 'draft' | 'pending' | 'submitted' | 'won' | 'lost' | 'expired';
+export type BidStatus = 'draft' | 'pending' | 'submitted' | 'won' | 'lost' | 'expired' | 'cancelled';
 
 // Bid type options
 export type BidType = 'government' | 'private' | 'nonprofit' | 'other';
+
+// Purchase types
+export type PurchaseType = 'goods' | 'services' | 'works' | 'consultancy';
 
 // Bid entity
 export interface Bid {
@@ -20,11 +24,17 @@ export interface Bid {
   clientName: string;
   bidName: string;
   bidType: BidType;
+  purchaseType: PurchaseType;
   status: BidStatus;
   createdAt: string;
   deadline: string;
   notes?: string;
   estimatedValue?: number;
+  costValue?: number;
+  quotedValue?: number;
+  profit?: number;
+  additionalCosts?: number;
+  duration?: string;
   assignedTo?: string[];
   tags?: string[];
 }
@@ -46,12 +56,66 @@ export interface Project {
   bidId?: string;
   name: string;
   description?: string;
-  status: 'active' | 'completed' | 'on-hold' | 'cancelled';
+  status: 'active' | 'completed' | 'on-hold' | 'cancelled' | 'closing';
   createdAt: string;
   startDate?: string;
   endDate?: string;
   clientName: string;
+  purchaseValue?: number;
+  salesValue?: number;
+  profit?: number;
   files: FileItem[];
+}
+
+// Client/Supplier entity
+export interface Organization {
+  id: string;
+  name: string;
+  code: string;
+  registrationNumber?: string;
+  registrationFinancial?: string;
+  type: 'ngo' | 'company' | 'government' | 'individual' | 'other';
+  address?: string;
+  location?: {
+    lat: number;
+    lng: number;
+  };
+  phone?: string;
+  mobile?: string;
+  emails: string[];
+  contacts: Contact[];
+  isActive: boolean;
+}
+
+// Contact person
+export interface Contact {
+  id: string;
+  name: string;
+  jobTitle?: string;
+  email?: string;
+  phone?: string;
+}
+
+// Product base interface
+export interface BaseProduct {
+  id: string;
+  name: string;
+  code: string;
+  category: string;
+  isTaxable: boolean;
+  taxRate?: number;
+}
+
+// Supply product
+export interface SupplyProduct extends BaseProduct {
+  unit: string;
+}
+
+// Transport service
+export interface TransportService extends BaseProduct {
+  vehicleType: string;
+  capacity?: string;
+  billingMethod: 'per_trip' | 'per_km' | 'per_day';
 }
 
 // Cost structure
@@ -73,6 +137,12 @@ export interface DashboardStats {
   activeBids: number;
   wonBids: number;
   lostBids: number;
+  pendingBids: number;
+  totalProjects: number;
+  currentProjects: number;
+  completedProjects: number;
+  profitValue: number;
+  estimatedProfits: number;
   upcomingDeadlines: number;
   recentActivity: Activity[];
 }
@@ -84,7 +154,7 @@ export interface Activity {
   userAvatar?: string;
   userName: string;
   action: string;
-  targetType: 'bid' | 'project' | 'file' | 'cost';
+  targetType: 'bid' | 'project' | 'client' | 'supplier' | 'product' | 'file' | 'cost';
   targetId: string;
   targetName: string;
   timestamp: string;

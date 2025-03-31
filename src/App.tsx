@@ -53,8 +53,16 @@ const App = () => {
                 <Route index element={<Dashboard />} />
                 <Route path="bids" element={<Bids />} />
                 <Route path="bids/:id" element={<BidDetails />} />
+                <Route path="bids/new" element={<BidDetails />} />
                 <Route path="projects" element={<Projects />} />
                 <Route path="projects/:id" element={<ProjectDetails />} />
+                <Route path="projects/new" element={<ProjectDetails />} />
+                <Route path="clients" element={<NotFound />} /> {/* Placeholder for future implementation */}
+                <Route path="clients/new" element={<NotFound />} /> {/* Placeholder for future implementation */}
+                <Route path="suppliers" element={<NotFound />} /> {/* Placeholder for future implementation */}
+                <Route path="suppliers/new" element={<NotFound />} /> {/* Placeholder for future implementation */}
+                <Route path="products" element={<NotFound />} /> {/* Placeholder for future implementation */}
+                <Route path="products/new" element={<NotFound />} /> {/* Placeholder for future implementation */}
                 <Route path="reports" element={<Reports />} />
                 <Route path="settings" element={<Settings />} />
               </Route>

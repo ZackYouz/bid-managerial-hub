@@ -1,4 +1,3 @@
-
 import { Bid, Project, FileItem, CostItem, Activity, User, BidStatus, BidType } from "../types";
 
 // Helper function to generate unique IDs
@@ -388,22 +387,296 @@ export const updateExpiredBids = (): void => {
 };
 
 // Dashboard statistics
-export const getDashboardStats = () => {
+export function getDashboardStats() {
   const bids = getBids();
-  const activities = getActivities();
+  const projects = getProjects();
   
-  // Update expired bids first
-  updateExpiredBids();
+  // Calculate profit values
+  const completedProjects = projects.filter(project => project.status === 'completed');
+  const profitValue = completedProjects.reduce((sum, project) => sum + (project.profit || 0), 0);
   
+  // Calculate estimated profits from bids
+  const estimatedProfits = bids.reduce((sum, bid) => {
+    if (bid.quotedValue && bid.costValue) {
+      return sum + (bid.quotedValue - bid.costValue);
+    }
+    return sum;
+  }, 0);
+
   return {
     totalBids: bids.length,
-    activeBids: bids.filter(bid => ['draft', 'pending', 'submitted'].includes(bid.status)).length,
+    activeBids: bids.filter(bid => bid.status === 'draft' || bid.status === 'pending' || bid.status === 'submitted').length,
     wonBids: bids.filter(bid => bid.status === 'won').length,
     lostBids: bids.filter(bid => bid.status === 'lost').length,
-    upcomingDeadlines: getUpcomingDeadlines(7).length,
-    recentActivity: activities.slice(0, 10)
+    pendingBids: bids.filter(bid => bid.status === 'pending').length,
+    totalProjects: projects.length,
+    currentProjects: projects.filter(project => project.status === 'active').length,
+    completedProjects: projects.filter(project => project.status === 'completed').length,
+    profitValue,
+    estimatedProfits,
+    upcomingDeadlines: getUpcomingDeadlines().length,
+    recentActivity: generateMockActivities(),
   };
-};
+}
+
+// Generate some mock activities
+function generateMockActivities() {
+  return [
+    {
+      id: "act1",
+      userId: "user1",
+      userName: "John Smith",
+      userAvatar: "https://randomuser.me/api/portraits/men/32.jpg",
+      action: "updated",
+      targetType: "bid",
+      targetId: "bid1",
+      targetName: "City Hospital RFP",
+      timestamp: new Date(Date.now() - 1000 * 60 * 10).toISOString(), // 10 minutes ago
+    },
+    {
+      id: "act2",
+      userId: "user2",
+      userName: "Lisa Johnson",
+      userAvatar: "https://randomuser.me/api/portraits/women/44.jpg",
+      action: "created",
+      targetType: "project",
+      targetId: "proj1",
+      targetName: "School Renovation",
+      timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(), // 45 minutes ago
+    },
+    {
+      id: "act3",
+      userId: "user1",
+      userName: "John Smith",
+      userAvatar: "https://randomuser.me/api/portraits/men/32.jpg",
+      action: "marked as won",
+      targetType: "bid",
+      targetId: "bid3",
+      targetName: "Municipal Water Supply",
+      timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(), // 2 hours ago
+    },
+    {
+      id: "act4",
+      userId: "user3",
+      userName: "Robert Chen",
+      userAvatar: "https://randomuser.me/api/portraits/men/22.jpg",
+      action: "added",
+      targetType: "client",
+      targetId: "client2",
+      targetName: "GlobalTech Inc.",
+      timestamp: new Date(Date.now() - 1000 * 60 * 180).toISOString(), // 3 hours ago
+    },
+    {
+      id: "act5",
+      userId: "user2",
+      userName: "Lisa Johnson",
+      userAvatar: "https://randomuser.me/api/portraits/women/44.jpg",
+      action: "updated",
+      targetType: "supplier",
+      targetId: "supp1",
+      targetName: "Quality Builders Co.",
+      timestamp: new Date(Date.now() - 1000 * 60 * 360).toISOString(), // 6 hours ago
+    },
+    {
+      id: "act6",
+      userId: "user3",
+      userName: "Robert Chen",
+      userAvatar: "https://randomuser.me/api/portraits/men/22.jpg",
+      action: "marked as completed",
+      targetType: "project",
+      targetId: "proj2",
+      targetName: "Office Remodeling",
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+    },
+  ];
+}
+
+// Get upcoming deadlines
+export function getUpcomingDeadlines() {
+  const bids = getBids();
+  const today = new Date();
+  const twoWeeksFromNow = new Date(today);
+  twoWeeksFromNow.setDate(today.getDate() + 14);
+  
+  return bids.filter(bid => {
+    if (bid.status === 'draft' || bid.status === 'pending') {
+      const deadline = new Date(bid.deadline);
+      return deadline >= today && deadline <= twoWeeksFromNow;
+    }
+    return false;
+  });
+}
+
+// Get bids
+export function getBids() {
+  // Mock bid data
+  return [
+    {
+      id: "bid1",
+      bidNumber: "20231001-MTC-SRV",
+      bidName: "IT Services RFP",
+      clientName: "MediTech Corp",
+      bidType: "private",
+      purchaseType: "services",
+      status: "pending",
+      createdAt: "2023-10-01T09:00:00Z",
+      deadline: "2023-11-15T17:00:00Z",
+      estimatedValue: 85000,
+      costValue: 65000,
+      quotedValue: 89500,
+      profit: 24500,
+      duration: "1 year",
+      assignedTo: ["user1", "user2"],
+      tags: ["IT", "Services"]
+    },
+    {
+      id: "bid2",
+      bidNumber: "20231005-GEG-GDS",
+      bidName: "Medical Equipment Supply",
+      clientName: "General Eastern Group",
+      bidType: "government",
+      purchaseType: "goods",
+      status: "submitted",
+      createdAt: "2023-10-05T11:30:00Z",
+      deadline: "2023-10-20T17:00:00Z",
+      estimatedValue: 250000,
+      costValue: 190000,
+      quotedValue: 245000,
+      profit: 55000,
+      duration: "6 months",
+      assignedTo: ["user2"],
+      tags: ["Medical", "Equipment"]
+    },
+    {
+      id: "bid3",
+      bidNumber: "20231010-MSC-SRV",
+      bidName: "Consulting Services",
+      clientName: "Municipal Services Commission",
+      bidType: "government",
+      purchaseType: "services",
+      status: "won",
+      createdAt: "2023-10-10T14:15:00Z",
+      deadline: "2023-10-31T17:00:00Z",
+      estimatedValue: 120000,
+      costValue: 75000,
+      quotedValue: 115000,
+      profit: 40000,
+      duration: "8 months",
+      assignedTo: ["user1", "user3"],
+      tags: ["Consulting", "Government"]
+    },
+    {
+      id: "bid4",
+      bidNumber: "20231015-UNP-GDS",
+      bidName: "Office Supplies",
+      clientName: "United Nonprofit",
+      bidType: "nonprofit",
+      purchaseType: "goods",
+      status: "lost",
+      createdAt: "2023-10-15T10:00:00Z",
+      deadline: "2023-11-05T17:00:00Z",
+      estimatedValue: 30000,
+      costValue: 22000,
+      quotedValue: 28500,
+      profit: 6500,
+      notes: "Lost due to higher pricing than competitor",
+      assignedTo: ["user2"],
+      tags: ["Office", "Supplies"]
+    },
+    {
+      id: "bid5",
+      bidNumber: "20231020-FTS-SRV",
+      bidName: "Technical Training Services",
+      clientName: "FastTrack Solutions",
+      bidType: "private",
+      purchaseType: "services",
+      status: "draft",
+      createdAt: "2023-10-20T15:45:00Z",
+      deadline: "2023-12-10T17:00:00Z",
+      estimatedValue: 45000,
+      assignedTo: ["user1"],
+      tags: ["Training", "Technical"]
+    }
+  ];
+}
+
+// Get projects
+export function getProjects() {
+  // Mock project data
+  return [
+    {
+      id: "proj1",
+      bidId: "bid3",
+      name: "Municipal Services Consulting",
+      description: "Strategic consulting services for the Municipal Services Commission",
+      status: "active",
+      createdAt: "2023-10-31T09:00:00Z",
+      startDate: "2023-11-15T09:00:00Z",
+      endDate: "2024-07-15T17:00:00Z",
+      clientName: "Municipal Services Commission",
+      purchaseValue: 75000,
+      salesValue: 115000,
+      profit: 40000,
+      files: []
+    },
+    {
+      id: "proj2",
+      name: "Office Remodeling Project",
+      description: "Complete remodeling of the headquarters office space",
+      status: "completed",
+      createdAt: "2023-09-01T09:00:00Z",
+      startDate: "2023-09-15T09:00:00Z",
+      endDate: "2023-10-30T17:00:00Z",
+      clientName: "Internal",
+      purchaseValue: 120000,
+      salesValue: 0,
+      profit: -120000,
+      files: []
+    },
+    {
+      id: "proj3",
+      bidId: "bid2",
+      name: "Medical Equipment Procurement",
+      description: "Supply of medical equipment to General Eastern Group hospitals",
+      status: "on-hold",
+      createdAt: "2023-10-25T14:30:00Z",
+      startDate: "2023-11-01T09:00:00Z",
+      clientName: "General Eastern Group",
+      purchaseValue: 190000,
+      salesValue: 245000,
+      profit: 55000,
+      files: []
+    },
+    {
+      id: "proj4",
+      name: "Software Implementation",
+      description: "Implementation of new ERP system",
+      status: "active",
+      createdAt: "2023-10-01T10:15:00Z",
+      startDate: "2023-10-15T09:00:00Z",
+      endDate: "2024-02-15T17:00:00Z",
+      clientName: "TechAdvance Inc",
+      purchaseValue: 85000,
+      salesValue: 150000,
+      profit: 65000,
+      files: []
+    },
+    {
+      id: "proj5",
+      name: "Annual Maintenance Contract",
+      description: "Yearly maintenance services for client facilities",
+      status: "active",
+      createdAt: "2023-09-15T11:00:00Z",
+      startDate: "2023-10-01T09:00:00Z",
+      endDate: "2024-09-30T17:00:00Z",
+      clientName: "GlobalTech Industries",
+      purchaseValue: 120000,
+      salesValue: 180000,
+      profit: 60000,
+      files: []
+    }
+  ];
+}
 
 // Calculate remaining days until deadline
 export const getRemainingDays = (deadline: string): number => {
