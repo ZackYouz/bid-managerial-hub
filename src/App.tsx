@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +16,10 @@ import ProjectDetails from "./pages/ProjectDetails";
 import Login from "./pages/Login";
 import Clients from "./pages/Clients";
 import ClientDetails from "./pages/ClientDetails";
+import Suppliers from "./pages/Suppliers";
+import SupplierDetails from "./pages/SupplierDetails";
+import Products from "./pages/Products";
+import ProductDetails from "./pages/ProductDetails";
 import { useState, useEffect } from "react";
 import { User } from "./types";
 
@@ -60,10 +65,12 @@ const App = () => {
                 <Route path="clients" element={<Clients />} />
                 <Route path="clients/:id" element={<ClientDetails />} />
                 <Route path="clients/new" element={<ClientDetails />} />
-                <Route path="suppliers" element={<NotFound />} /> {/* Placeholder for future implementation */}
-                <Route path="suppliers/new" element={<NotFound />} /> {/* Placeholder for future implementation */}
-                <Route path="products" element={<NotFound />} /> {/* Placeholder for future implementation */}
-                <Route path="products/new" element={<NotFound />} /> {/* Placeholder for future implementation */}
+                <Route path="suppliers" element={<Suppliers />} />
+                <Route path="suppliers/:id" element={<SupplierDetails />} />
+                <Route path="suppliers/new" element={<SupplierDetails />} />
+                <Route path="products" element={<Products />} />
+                <Route path="products/:id" element={<ProductDetails />} />
+                <Route path="products/new" element={<ProductDetails />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="settings" element={<Settings />} />
               </Route>

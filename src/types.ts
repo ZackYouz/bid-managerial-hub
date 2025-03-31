@@ -1,4 +1,5 @@
 
+
 // User related types
 export interface User {
   id: string;
@@ -111,12 +112,48 @@ export interface ClientStats {
   clientsWithProjects: number;
 }
 
+// Supplier interface (similar to Client)
+export interface Supplier {
+  id: string;
+  name: string;
+  code: string;
+  registrationNumber?: string;
+  registrationFinancial?: string;
+  type: OrganizationType;
+  address?: string;
+  location?: {
+    lat: number;
+    lng: number;
+  };
+  phone?: string;
+  mobile?: string;
+  emails: string[];
+  contacts: Contact[];
+  isActive: boolean;
+  hasActiveProjects: boolean;
+  productCategories?: string[];
+}
+
+// Supplier stats
+export interface SupplierStats {
+  totalSuppliers: number;
+  activeSuppliers: number;
+  byType: {
+    type: OrganizationType;
+    count: number;
+  }[];
+  suppliersWithProjects: number;
+}
+
+// Product category types
+export type ProductCategory = 'food' | 'hygiene' | 'services' | 'transportation' | string;
+
 // Product base interface
 export interface BaseProduct {
   id: string;
   name: string;
   code: string;
-  category: string;
+  category: ProductCategory;
   isTaxable: boolean;
   taxRate?: number;
 }
@@ -126,9 +163,15 @@ export interface SupplyProduct extends BaseProduct {
   unit: string;
 }
 
+// Service product
+export interface ServiceProduct extends BaseProduct {
+  description?: string;
+  rateType?: string;
+}
+
 // Transport service
 export interface TransportService extends BaseProduct {
-  vehicleType: string;
+  vehicleType: 'bus' | 'truck' | 'container' | 'van' | 'car';
   capacity?: string;
   billingMethod: 'per_trip' | 'per_km' | 'per_day';
 }
@@ -186,3 +229,4 @@ export interface ChartData {
     borderWidth?: number;
   }[];
 }
+

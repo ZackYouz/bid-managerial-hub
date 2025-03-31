@@ -1,4 +1,4 @@
-import { Bid, Project, FileItem, CostItem, Activity, User, BidStatus, BidType, PurchaseType, Client, ClientStats, OrganizationType } from "../types";
+import { Bid, Project, FileItem, CostItem, Activity, User, BidStatus, BidType, PurchaseType, Client, ClientStats, OrganizationType, Supplier, SupplierStats, BaseProduct, SupplyProduct, TransportService, ProductCategory } from "../types";
 
 // Helper function to generate unique IDs
 const generateId = (): string => {
@@ -982,4 +982,291 @@ export const deleteClient = (id: string): boolean => {
 
 export const getClientById = (id: string): Client | undefined => {
   return clients.find(client => client.id === id);
+};
+
+// Supplier-related functions
+let suppliers: Supplier[] = [];
+
+export const getSuppliers = (): Supplier[] => {
+  // Return cached suppliers if available
+  if (suppliers.length > 0) {
+    return [...suppliers];
+  }
+
+  // Generate mock supplier data
+  suppliers = [
+    {
+      id: "sup-001",
+      name: "Quality Building Materials",
+      code: "QBM-2023",
+      registrationNumber: "SUP1234567",
+      type: "company",
+      address: "123 Construction Rd, New York, NY",
+      emails: ["info@qbm.com"],
+      contacts: [
+        { id: "contact-001", name: "James Wilson", jobTitle: "Sales Manager", email: "james@qbm.com", phone: "+1 234 567 8901" }
+      ],
+      isActive: true,
+      hasActiveProjects: true
+    },
+    {
+      id: "sup-002",
+      name: "Medical Supplies Inc",
+      code: "MSI-2023",
+      registrationNumber: "SUP7654321",
+      type: "company",
+      address: "456 Health Ave, Chicago, IL",
+      emails: ["sales@medsupplies.com", "info@medsupplies.com"],
+      contacts: [
+        { id: "contact-002", name: "Emily Brown", jobTitle: "Account Manager", email: "emily@medsupplies.com", phone: "+1 345 678 9012" }
+      ],
+      isActive: true,
+      hasActiveProjects: false
+    },
+    {
+      id: "sup-003",
+      name: "Green Earth NGO Supplies",
+      code: "GES-2023",
+      type: "ngo",
+      address: "789 Eco St, Portland, OR",
+      emails: ["contact@greenearthsupplies.org"],
+      contacts: [
+        { id: "contact-003", name: "Michael Green", jobTitle: "Director", email: "michael@greenearthsupplies.org", phone: "+1 456 789 0123" }
+      ],
+      isActive: false,
+      hasActiveProjects: false
+    },
+    {
+      id: "sup-004",
+      name: "Government Office Supplies",
+      code: "GOS-2023",
+      registrationNumber: "GOV9876543",
+      type: "government",
+      address: "101 Federal Plaza, Washington, DC",
+      emails: ["procurement@govsupplies.gov"],
+      contacts: [
+        { id: "contact-004", name: "Sarah Johnson", jobTitle: "Procurement Officer", email: "sarah@govsupplies.gov", phone: "+1 567 890 1234" }
+      ],
+      isActive: true,
+      hasActiveProjects: true
+    },
+    {
+      id: "sup-005",
+      name: "Tech Solutions Providers",
+      code: "TSP-2023",
+      registrationNumber: "CORP5678901",
+      type: "company",
+      address: "202 Innovation Way, San Francisco, CA",
+      emails: ["sales@techsolutions.com", "support@techsolutions.com"],
+      contacts: [
+        { id: "contact-005", name: "David Lee", jobTitle: "Sales Director", email: "david@techsolutions.com", phone: "+1 678 901 2345" },
+        { id: "contact-006", name: "Lisa Chen", jobTitle: "Account Executive", email: "lisa@techsolutions.com", phone: "+1 789 012 3456" }
+      ],
+      isActive: true,
+      hasActiveProjects: true,
+      productCategories: ["IT Equipment", "Software", "Services"]
+    }
+  ];
+  
+  return [...suppliers];
+};
+
+export const getSupplierStats = (): SupplierStats => {
+  const allSuppliers = getSuppliers();
+  
+  // Count by type
+  const typeCountMap: Record<OrganizationType, number> = {
+    ngo: 0,
+    company: 0,
+    government: 0,
+    individual: 0,
+    other: 0
+  };
+  
+  allSuppliers.forEach(supplier => {
+    if (typeCountMap[supplier.type] !== undefined) {
+      typeCountMap[supplier.type]++;
+    }
+  });
+  
+  const byType = Object.entries(typeCountMap)
+    .filter(([_, count]) => count > 0)
+    .map(([type, count]) => ({
+      type: type as OrganizationType,
+      count
+    }));
+  
+  return {
+    totalSuppliers: allSuppliers.length,
+    activeSuppliers: allSuppliers.filter(supplier => supplier.isActive).length,
+    byType,
+    suppliersWithProjects: allSuppliers.filter(supplier => supplier.hasActiveProjects).length
+  };
+};
+
+// Add, update, and delete supplier functions
+export const addSupplier = (supplier: Omit<Supplier, "id">): Supplier => {
+  const newSupplier = {
+    ...supplier,
+    id: `sup-${String(suppliers.length + 1).padStart(3, '0')}`
+  };
+  
+  suppliers.push(newSupplier);
+  return newSupplier;
+};
+
+export const updateSupplier = (id: string, supplierData: Partial<Supplier>): Supplier | null => {
+  const index = suppliers.findIndex(supplier => supplier.id === id);
+  
+  if (index === -1) {
+    return null;
+  }
+  
+  suppliers[index] = {
+    ...suppliers[index],
+    ...supplierData
+  };
+  
+  return suppliers[index];
+};
+
+export const deleteSupplier = (id: string): boolean => {
+  const initialLength = suppliers.length;
+  suppliers = suppliers.filter(supplier => supplier.id !== id);
+  
+  return suppliers.length !== initialLength;
+};
+
+export const getSupplierById = (id: string): Supplier | undefined => {
+  return suppliers.find(supplier => supplier.id === id);
+};
+
+// Product-related functions
+let products: (SupplyProduct | TransportService)[] = [];
+
+export const getProducts = (): (SupplyProduct | TransportService)[] => {
+  // Return cached products if available
+  if (products.length > 0) {
+    return [...products];
+  }
+
+  // Generate mock product data
+  products = [
+    {
+      id: "prod-001",
+      name: "Rice (25kg bag)",
+      code: "FOOD-001",
+      category: "food",
+      unit: "bag",
+      isTaxable: true,
+      taxRate: 11
+    },
+    {
+      id: "prod-002",
+      name: "Cooking Oil (5L)",
+      code: "FOOD-002",
+      category: "food",
+      unit: "bottle",
+      isTaxable: true,
+      taxRate: 11
+    },
+    {
+      id: "prod-003",
+      name: "Sanitizer (1L)",
+      code: "HYG-001",
+      category: "hygiene",
+      unit: "bottle",
+      isTaxable: false
+    },
+    {
+      id: "prod-004",
+      name: "Face Masks (Box of 50)",
+      code: "HYG-002",
+      category: "hygiene",
+      unit: "box",
+      isTaxable: false
+    },
+    {
+      id: "prod-005",
+      name: "10 MT Truck Transport",
+      code: "TRANS-001",
+      category: "transportation",
+      vehicleType: "truck",
+      capacity: "10MT",
+      billingMethod: "per_trip",
+      isTaxable: true,
+      taxRate: 11
+    },
+    {
+      id: "prod-006",
+      name: "20-Seater Bus",
+      code: "TRANS-002",
+      category: "transportation",
+      vehicleType: "bus",
+      capacity: "20 passengers",
+      billingMethod: "per_day",
+      isTaxable: true,
+      taxRate: 11
+    },
+    {
+      id: "prod-007",
+      name: "Container Shipping (20ft)",
+      code: "TRANS-003",
+      category: "transportation",
+      vehicleType: "container",
+      capacity: "20ft",
+      billingMethod: "per_km",
+      isTaxable: true,
+      taxRate: 11
+    }
+  ];
+  
+  return [...products];
+};
+
+export const getProductCategories = (): ProductCategory[] => {
+  const allProducts = getProducts();
+  const categories = new Set<ProductCategory>();
+  
+  allProducts.forEach(product => {
+    categories.add(product.category);
+  });
+  
+  return Array.from(categories);
+};
+
+export const addProduct = (productData: Omit<SupplyProduct | TransportService, "id">): SupplyProduct | TransportService => {
+  const newProduct = {
+    ...productData,
+    id: `prod-${String(products.length + 1).padStart(3, '0')}`
+  };
+  
+  products.push(newProduct);
+  return newProduct;
+};
+
+export const updateProduct = (id: string, productData: Partial<SupplyProduct | TransportService>): SupplyProduct | TransportService | null => {
+  const index = products.findIndex(product => product.id === id);
+  
+  if (index === -1) {
+    return null;
+  }
+  
+  products[index] = {
+    ...products[index],
+    ...productData
+  };
+  
+  return products[index];
+};
+
+export const deleteProduct = (id: string): boolean => {
+  const initialLength = products.length;
+  products = products.filter(product => product.id !== id);
+  
+  return products.length !== initialLength;
+};
+
+export const getProductById = (id: string): SupplyProduct | TransportService | undefined => {
+  return products.find(product => product.id === id);
 };
